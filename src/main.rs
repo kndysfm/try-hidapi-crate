@@ -2,6 +2,8 @@ extern crate hidapi;
 
 use hidapi::{HidApi, HidDevice};
 
+mod ds4;
+
 /// from "https://bitbucket.org/unessa/dualshock4-rust/src/master/src/dualshock4/mod.rs"
 const DUALSHOCK4_VENDOR_ID:u16 = 0x54c;
 // Dualshock4 product ID changed after playstation update 5.50
@@ -14,12 +16,13 @@ fn start(hid: HidDevice) {
     
     loop {
         match hid.read_timeout(&mut buf, timeout) {
-            Ok(sz) => {
-                println!("Read ({} bytes): {:?}", sz, &buf[..sz]);
+            Ok(_) => {
+                let rep: Vec<u8> = buf.to_vec();
+                // offset 1 byte for HID report ID
+                let input = ds4::input(&rep, 1);
+                println!("{:?}", &input);
             },
-            Err(_) => {
-
-            }
+            Err(_) => ()
         }
     }
 }
